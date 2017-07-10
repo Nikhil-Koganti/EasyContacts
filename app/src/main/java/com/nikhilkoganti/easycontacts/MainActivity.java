@@ -1,16 +1,25 @@
 package com.nikhilkoganti.easycontacts;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -18,6 +27,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -113,9 +123,10 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * The main fragment containing a Contact list.
      */
     public static class MainFragment extends Fragment {
+        private static final int REQUEST_CONTACT_PROVIDER = 36362;
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -128,7 +139,10 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
         Context mContext;
         FragmentManager fm = getFragmentManager();
         SectionsPagerAdapter pagerAdapter = new SectionsPagerAdapter(fm);
+        private SimpleCursorAdapter adapter;
         private static final String ARG_SECTION_NUMBER = "section_number";
+        // Defines the id of the loader for later reference
+        public static final int CONTACT_LOADER_ID = 78; // From docs: A unique identifier for this loader. Can be whatever you want.
 
         public MainFragment() {
         }
@@ -153,6 +167,14 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
             database = new DatabaseStore(mContext);
             database.openDatabase();
             list = (ListView)rootView.findViewById(R.id.id_list);
+            if (ActivityCompat.checkSelfPermission(getContext(),
+                    Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        REQUEST_CONTACT_PROVIDER);
+            } else {
+                Log.i("DB", "PERMISSION GRANTED");
+            }
             deleteAll = (Button)rootView.findViewById(R.id.id_btndelete);
             deleteAll.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -176,27 +198,68 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
                     alertdia.show();
                 }
             });
-            updateListView();
-            list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                @Override
-                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    list.setLongClickable(true);
-//                  Log.e("positions is:",cursor.getString(0));
-                    database.deleteOneRecord(Integer.parseInt(cursor.getString(0)));
-                    updateListView();
-                    return true;
-                }
-            });
-            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent inte = new Intent(MainActivity.this,EditContact.class);
-//                startActivity(inte);
-
-                }
-            });
+            setupCursorAdapter();
+            // Initialize the loader with a special ID and the defined callbacks from above
+            getActivity().getSupportLoaderManager().initLoader(CONTACT_LOADER_ID,
+                    new Bundle(), contactsLoader);
+            list.setAdapter(adapter);
             return rootView;
         }
+
+        // Create simple cursor adapter to connect the cursor dataset we load with a ListView
+        private void setupCursorAdapter() {
+            // Column data from cursor to bind views from
+            String[] uiBindFrom = { ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts.PHOTO_URI };
+            // View IDs which will have the respective column data inserted
+            int[] uiBindTo = { R.id.contact_name, R.id.contact_image };
+            // Create the simple cursor adapter to use for our list
+            // specifying the template to inflate (item_contact),
+            adapter = new SimpleCursorAdapter(
+                    mContext, R.layout.contact_item,
+                    null, uiBindFrom, uiBindTo,
+                    0);
+        }
+
+        // Defines the asynchronous callback for the contacts data loader
+        private LoaderManager.LoaderCallbacks<Cursor> contactsLoader =
+            new LoaderManager.LoaderCallbacks<Cursor>() {
+                // Create and return the actual cursor loader for the contacts data
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                    // Define the columns to retrieve
+                    String[] projectionFields = new String[] { ContactsContract.Contacts._ID,
+                            ContactsContract.Contacts.DISPLAY_NAME,
+                            ContactsContract.Contacts.PHOTO_URI };
+                    // Construct the loader
+                    CursorLoader cursorLoader = new CursorLoader(mContext,
+                            ContactsContract.Contacts.CONTENT_URI, // URI
+                            projectionFields, // projection fields
+                            null, // the selection criteria
+                            null, // the selection args
+                            null // the sort order
+                    );
+                    // Return the loader for use
+                    return cursorLoader;
+                }
+
+                // When the system finishes retrieving the Cursor through the CursorLoader,
+                // a call to the onLoadFinished() method takes place.
+                @Override
+                public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+                    // The swapCursor() method assigns the new Cursor to the adapter
+                    adapter.swapCursor(cursor);
+                }
+
+                // This method is triggered when the loader is being reset
+                // and the loader data is no longer available. Called if the data
+                // in the provider changes and the Cursor becomes stale.
+                @Override
+                public void onLoaderReset(Loader<Cursor> loader) {
+                    // Clear the Cursor we were using with another call to the swapCursor()
+                    adapter.swapCursor(null);
+                }
+            };
 
         private void updateListView() {
             cursor = database.getAllValues();
@@ -261,7 +324,6 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
                     return false;
                 }
             };
-            list.setAdapter(ls);
         }
     }
 
