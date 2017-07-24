@@ -57,11 +57,12 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-/*    DatabaseStore database;
-    Cursor cursor;
-    ListView list;
-    Button deleteAll;
-    //    New_Contact Newct;*/
+
+    /*    DatabaseStore database;
+        Cursor cursor;
+        ListView list;
+        Button deleteAll;
+        //    New_Contact Newct;*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -166,16 +167,17 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
             mContext = getContext();
             database = new DatabaseStore(mContext);
             database.openDatabase();
-            list = (ListView)rootView.findViewById(R.id.id_list);
-            if (ActivityCompat.checkSelfPermission(getContext(),
-                    Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            list = (ListView) rootView.findViewById(R.id.id_list);
+            if ((ActivityCompat.checkSelfPermission(getContext(),
+                    Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(getContext(),
+                    Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED)) {
                 ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.READ_CONTACTS},
+                        new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS},
                         REQUEST_CONTACT_PROVIDER);
             } else {
                 Log.i("DB", "PERMISSION GRANTED");
             }
-            deleteAll = (Button)rootView.findViewById(R.id.id_btndelete);
+            deleteAll = (Button) rootView.findViewById(R.id.id_btndelete);
             deleteAll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -209,10 +211,10 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
         // Create simple cursor adapter to connect the cursor dataset we load with a ListView
         private void setupCursorAdapter() {
             // Column data from cursor to bind views from
-            String[] uiBindFrom = { ContactsContract.Contacts.DISPLAY_NAME,
-                    ContactsContract.Contacts.PHOTO_URI };
+            String[] uiBindFrom = {ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts.PHOTO_URI};
             // View IDs which will have the respective column data inserted
-            int[] uiBindTo = { R.id.contact_name, R.id.contact_image };
+            int[] uiBindTo = {R.id.contact_name, R.id.contact_image};
             // Create the simple cursor adapter to use for our list
             // specifying the template to inflate (item_contact),
             adapter = new SimpleCursorAdapter(
@@ -223,43 +225,44 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
 
         // Defines the asynchronous callback for the contacts data loader
         private LoaderManager.LoaderCallbacks<Cursor> contactsLoader =
-            new LoaderManager.LoaderCallbacks<Cursor>() {
-                // Create and return the actual cursor loader for the contacts data
-                @Override
-                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                    // Define the columns to retrieve
-                    String[] projectionFields = new String[] { ContactsContract.Contacts._ID,
-                            ContactsContract.Contacts.DISPLAY_NAME,
-                            ContactsContract.Contacts.PHOTO_URI };
-                    // Construct the loader
-                    CursorLoader cursorLoader = new CursorLoader(mContext,
-                            ContactsContract.Contacts.CONTENT_URI, // URI
-                            projectionFields, // projection fields
-                            null, // the selection criteria
-                            null, // the selection args
-                            null // the sort order
-                    );
-                    // Return the loader for use
-                    return cursorLoader;
-                }
+                new LoaderManager.LoaderCallbacks<Cursor>() {
+                    // Create and return the actual cursor loader for the contacts data
+                    @Override
+                    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                        // Define the columns to retrieve
+                        String[] projectionFields = new String[]{ContactsContract.Contacts._ID,
+                                ContactsContract.Contacts.DISPLAY_NAME,
+                                ContactsContract.Contacts.PHOTO_URI};
+                        // Construct the loader
+                        CursorLoader cursorLoader = new CursorLoader(mContext,
+                                ContactsContract.Contacts.CONTENT_URI, // URI
+                                projectionFields, // projection fields
+                                null, // the selection criteria
+                                null, // the selection args
+                                null // the sort order
+                        );
+                        // Return the loader for use
+                        return cursorLoader;
+                    }
 
-                // When the system finishes retrieving the Cursor through the CursorLoader,
-                // a call to the onLoadFinished() method takes place.
-                @Override
-                public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-                    // The swapCursor() method assigns the new Cursor to the adapter
-                    adapter.swapCursor(cursor);
-                }
+                    //
+                    // When the system finishes retrieving the Cursor through the CursorLoader,
+                    // a call to the onLoadFinished() method takes place.
+                    @Override
+                    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+                        // The swapCursor() method assigns the new Cursor to the adapter
+                        adapter.swapCursor(cursor);
+                    }
 
-                // This method is triggered when the loader is being reset
-                // and the loader data is no longer available. Called if the data
-                // in the provider changes and the Cursor becomes stale.
-                @Override
-                public void onLoaderReset(Loader<Cursor> loader) {
-                    // Clear the Cursor we were using with another call to the swapCursor()
-                    adapter.swapCursor(null);
-                }
-            };
+                    // This method is triggered when the loader is being reset
+                    // and the loader data is no longer available. Called if the data
+                    // in the provider changes and the Cursor becomes stale.
+                    @Override
+                    public void onLoaderReset(Loader<Cursor> loader) {
+                        // Clear the Cursor we were using with another call to the swapCursor()
+                        adapter.swapCursor(null);
+                    }
+                };
 
         private void updateListView() {
             cursor = database.getAllValues();
@@ -342,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
             // getItem is called to instantiate the fragment for the given page.
             // Return a MainFragment (defined as a static inner class below).
 
-            switch(position){
+            switch (position) {
                 case 0:
 
                     return MainFragment.newInstance(position + 1);
