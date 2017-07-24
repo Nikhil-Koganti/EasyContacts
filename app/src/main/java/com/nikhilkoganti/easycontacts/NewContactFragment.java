@@ -100,6 +100,13 @@ public class NewContactFragment extends Fragment {
                         .withValue(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, ((EditText) rootView.findViewById(R.id.id_edtPhone)).getText().toString()) // Number of the person
                         .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build()); // Type of mobile number
+
+                ops.add(ContentProviderOperation
+                        .newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(
+                                ContactsContract.Data.RAW_CONTACT_ID,   rawContactInsertIndex)
+                        .withValue(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Email.DATA, ((EditText) rootView.findViewById(R.id.id_edtEmail)).getText().toString()).build());
                 try
                 {
                     ContentProviderResult[] res = getActivity().getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
