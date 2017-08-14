@@ -29,6 +29,8 @@ import android.widget.ListView;
 import com.nikhilkoganti.easycontacts.dummy.DummyContent;
 import com.nikhilkoganti.easycontacts.dummy.DummyContent.DummyItem;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -82,17 +84,17 @@ public class CallLogFragment extends ListFragment implements SearchView.OnQueryT
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_call_log, container, false);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
-        }
+//        // Set the adapter
+//        if (view instanceof RecyclerView) {
+//            Context context = view.getContext();
+//            RecyclerView recyclerView = (RecyclerView) view;
+//            if (mColumnCount <= 1) {
+//                recyclerView.setLayoutManager(new LinearLayoutManager(context));
+//            } else {
+//                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+//            }
+//            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+//        }
         return view;
     }
 
@@ -142,7 +144,7 @@ public class CallLogFragment extends ListFragment implements SearchView.OnQueryT
         // Create an empty adapter we will use to display the loaded data.
         mAdapter = new SimpleCursorAdapter(getActivity(),
                 android.R.layout.simple_list_item_2, null,
-                new String[] { ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.CONTACT_STATUS },
+                new String[] { ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.LAST_TIME_CONTACTED},
                 new int[] { android.R.id.text1, android.R.id.text2 }, 0);
         setListAdapter(mAdapter);
 
@@ -189,6 +191,8 @@ public class CallLogFragment extends ListFragment implements SearchView.OnQueryT
             ContactsContract.Contacts.CONTACT_PRESENCE,
             ContactsContract.Contacts.PHOTO_ID,
             ContactsContract.Contacts.LOOKUP_KEY,
+            ContactsContract.Contacts.LAST_TIME_CONTACTED
+
     };
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // This is called when a new Loader needs to be created.  This
