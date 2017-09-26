@@ -5,4 +5,9 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="action_feedback">Feedback</string>
+    <string name="heading_feedback">We acknowledge your feedback!!</string>
+    <string name="send_feedback">R U Sure?</string>
+    <string name="feedback_hint">I love your app, but...</string>
+    <string name="words_left">%d words left...</string>
 </resources>

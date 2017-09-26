@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nikhilkoganti.easycontacts.FeedbackActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:text="@string/heading_feedback"
+        android:textSize="32sp"
+        android:labelFor="@+id/feedback_edittext"
+        android:gravity="center"/>
+
+    <EditText
+        android:id="@+id/feedback_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:gravity="top"
+        android:maxEms="500"
+        android:textSize="22sp"
+        android:inputType="textMultiLine"
+        android:hint="@string/feedback_hint"/>
+
+    <TextView
+        android:id="@+id/words_left_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/words_left"
+        android:textSize="20sp"
+        android:gravity="right"/>
+
+    <Button
+        android:id="@+id/feedback_button"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#6a358b"
+        android:textSize="20sp"
+        android:textColor="#eef3f5"
+        android:text="@string/send_feedback"/>
+
+</LinearLayout>

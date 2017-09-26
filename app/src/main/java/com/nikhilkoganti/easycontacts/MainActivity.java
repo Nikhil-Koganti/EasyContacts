@@ -108,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.action_feedback){
+            startActivity(new Intent(getApplicationContext(), FeedbackActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
