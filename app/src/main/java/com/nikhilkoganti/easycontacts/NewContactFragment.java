@@ -4,6 +4,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.Context;
 import android.content.OperationApplicationException;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -12,8 +13,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 
 import java.util.ArrayList;
 
@@ -37,6 +42,7 @@ public class NewContactFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    static String extension;
 
     private OnFragmentInteractionListener mListener;
 
@@ -69,7 +75,6 @@ public class NewContactFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
     }
 
     @Override
@@ -77,6 +82,46 @@ public class NewContactFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_new_contact, container, false);
+
+        final Spinner phonespin = (Spinner) rootView.findViewById(R.id.id_spinPhone);
+        final String star[] = {"Mobile","Landline","Fax","Other"};
+        ArrayAdapter<String> aradap = new ArrayAdapter<String>(getActivity().getApplicationContext(), android.R.layout.simple_spinner_item, star);
+        phonespin.setAdapter(aradap);
+        final EditText phoneNumberEditText = (EditText) rootView.findViewById(R.id.id_edtPhone);
+        phonespin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String type;
+
+                type=phonespin.getItemAtPosition(position).toString();
+                String txt = phoneNumberEditText.getText().toString();
+                String[] numberArray = txt.split("-");
+                String actualPhoneNumber = "";
+                if(numberArray.length > 1)
+                    actualPhoneNumber = numberArray[1];
+                switch (type){
+                    case "Mobile":
+                        extension = "+91-";
+                        break;
+                    case "Landline":
+                        extension = "040-";
+                        break;
+                    case "Fax":
+                        extension = "";
+                        break;
+                    case "Other":
+                        extension = "";
+                        break;
+
+                }
+                phoneNumberEditText.setText( extension + actualPhoneNumber );
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         ((Button) rootView.findViewById(R.id.id_btnSave)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +152,10 @@ public class NewContactFragment extends Fragment {
                                 ContactsContract.Data.RAW_CONTACT_ID,   rawContactInsertIndex)
                         .withValue(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Email.DATA, ((EditText) rootView.findViewById(R.id.id_edtEmail)).getText().toString()).build());
+
+                ((EditText) rootView.findViewById(R.id.id_edtName)).setText("");
+                ((EditText) rootView.findViewById(R.id.id_edtPhone)).setText(extension);
+                ((EditText) rootView.findViewById(R.id.id_edtEmail)).setText("");
                 try
                 {
                     ContentProviderResult[] res = getActivity().getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);

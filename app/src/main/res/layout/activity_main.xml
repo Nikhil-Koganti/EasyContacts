@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.nikhilkoganti.easycontacts.MainActivity">
+    tools:context="com.nikhilkoganti.easycontacts.MainActivity"
+    android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -40,6 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_menu_help" />
+        app:elevation="8dp"
+        app:srcCompat="@mipmap/ic_darkstar" />
 
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

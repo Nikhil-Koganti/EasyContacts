@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:gravity="center"
+    android:weightSum="1">
+
+    <TextView
+        android:id="@+id/dialog_contact_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="32sp"
+        android:text="Name"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="5dp"
+        android:gravity="center"
+        android:textColor="@color/colorPrimary"/>
+
+    <TextView
+        android:textColor="@color/colorPrimary"
+        android:id="@+id/dialog_contact_number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Number"
+        android:textStyle="bold"
+        android:textSize="24sp"
+        android:layout_marginBottom="5dp"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/dialog_contact_email"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:text="Email"
+        android:layout_marginBottom="5dp"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        android:layout_gravity="center_horizontal" />
+
+    <ImageButton
+        android:id="@+id/dialog_call_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:hapticFeedbackEnabled="true"
+        android:background="@drawable/callbutton" />
+    <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/dialog_call_button"-->
+        <!--android:text="CALL"-->
+        <!--android:textSize="20sp"-->
+        <!--android:textColor="@android:color/holo_green_dark"-->
+        <!--android:background="@android:color/holo_green_light"/>-->
+
+</LinearLayout>

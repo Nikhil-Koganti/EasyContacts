@@ -156,7 +156,7 @@ public class CallLogFragment extends ListFragment implements SearchView.OnQueryT
     @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Place an action bar item for searching.
         MenuItem item = menu.add("Search");
-        item.setIcon(android.R.drawable.ic_menu_search);
+        item.setIcon(R.drawable.searchicon);
         item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         SearchView sv = new SearchView(getActivity());
         sv.setOnQueryTextListener(this);

@@ -1,14 +1,15 @@
 package com.nikhilkoganti.easycontacts;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.graphics.Typeface;
 import android.net.Uri;
-import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,7 +20,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -27,19 +28,24 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.nikhilkoganti.easycontacts.dummy.DummyContent;
+
+import static com.nikhilkoganti.easycontacts.CallLogFragment.CONTACTS_SUMMARY_PROJECTION;
 
 public class MainActivity extends AppCompatActivity implements NewContactFragment.OnFragmentInteractionListener, CallLogFragment.OnListFragmentInteractionListener {
 
@@ -58,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
      */
     private ViewPager mViewPager;
 
+    Typeface typeface;
     /*    DatabaseStore database;
         Cursor cursor;
         ListView list;
@@ -70,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -83,10 +91,11 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Under Developement!!", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
+
 
     }
 
@@ -128,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
     /**
      * The main fragment containing a Contact list.
      */
-    public static class MainFragment extends Fragment {
+    public static class MainFragment extends Fragment implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor> {
         private static final int REQUEST_CONTACT_PROVIDER = 36362;
         /**
          * The fragment argument representing the section number for this
@@ -137,15 +146,18 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
 
         DatabaseStore database;
         Cursor cursor;
-        ListView list;
-        Button deleteAll;
+        GridView list;
+        ImageButton deleteAll;
+        TextView txtview;
         Context mContext;
         FragmentManager fm = getFragmentManager();
         SectionsPagerAdapter pagerAdapter = new SectionsPagerAdapter(fm);
         private SimpleCursorAdapter adapter;
         private static final String ARG_SECTION_NUMBER = "section_number";
+        String mCurFilter;
         // Defines the id of the loader for later reference
         public static final int CONTACT_LOADER_ID = 78; // From docs: A unique identifier for this loader. Can be whatever you want.
+        private android.graphics.Typeface typeface;
 
         public MainFragment() {
         }
@@ -163,28 +175,37 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
         }
 
         @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setHasOptionsMenu(true);
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             mContext = getContext();
             database = new DatabaseStore(mContext);
             database.openDatabase();
-            list = (ListView) rootView.findViewById(R.id.id_list);
+
+            list = (GridView) rootView.findViewById(R.id.id_list);
             if ((ActivityCompat.checkSelfPermission(getContext(),
                     Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(getContext(),
-                    Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED)) {
+                    Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) &&(ActivityCompat.checkSelfPermission(getContext(),
+                    Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) ) {
                 ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS},
+                        new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS,
+                        Manifest.permission.CALL_PHONE},
                         REQUEST_CONTACT_PROVIDER);
             } else {
                 Log.i("DB", "PERMISSION GRANTED");
             }
-            deleteAll = (Button) rootView.findViewById(R.id.id_btndelete);
+            deleteAll = (ImageButton) rootView.findViewById(R.id.id_btndelete);
             deleteAll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
-                    alert.setMessage("Do You want to delete all records");
+                    alert.setMessage("Do you want to delete all records?");
                     alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -207,6 +228,50 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
             getActivity().getSupportLoaderManager().initLoader(CONTACT_LOADER_ID,
                     new Bundle(), contactsLoader);
             list.setAdapter(adapter);
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+
+                    final Dialog dialog = new Dialog(getActivity());
+
+                    dialog.setContentView(R.layout.contact_info);
+                    dialog.setTitle("Details");
+                    dialog.getWindow().setLayout(ViewPager.LayoutParams.MATCH_PARENT, ViewPager.LayoutParams.WRAP_CONTENT);
+
+                    final TextView nameTextView = (TextView) dialog.findViewById(R.id.dialog_contact_name);
+                    final TextView numberTextView = (TextView) dialog.findViewById(R.id.dialog_contact_number);
+                    final TextView emailTextView = (TextView) dialog.findViewById(R.id.dialog_contact_email);
+                    ImageButton callButton = (ImageButton) dialog.findViewById(R.id.dialog_call_button);
+                    dialog.show();
+
+                    callButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            String contact_name = ((TextView) v).getText().toString();
+                            Uri uri=Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI,Uri.encode(contact_name));
+
+                            String[] projection = new String[]{ContactsContract.PhoneLookup.NUMBER};
+
+                            String contactNumber="";
+                            Cursor cursor= getActivity().getApplicationContext().getContentResolver().query(uri,projection,null,null,null);
+
+                            if (cursor != null) {
+                                if(cursor.moveToFirst()) {
+                                    contactNumber=cursor.getString(0);
+                                }
+                                cursor.close();
+                            }
+
+                            Intent callIntent = new Intent(Intent.ACTION_CALL);
+                            callIntent.setData(Uri.parse("tel:"+contactNumber));
+                            startActivity(callIntent);
+                        }
+                    });
+
+                }
+            });
             return rootView;
         }
 
@@ -216,7 +281,8 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
             String[] uiBindFrom = {ContactsContract.Contacts.DISPLAY_NAME,
                     ContactsContract.Contacts.PHOTO_URI};
             // View IDs which will have the respective column data inserted
-            int[] uiBindTo = {R.id.contact_name, R.id.contact_image};
+            int[] uiBindTo = {R.id.contact_name };
+//            int[] uiBindTo = {R.id.contact_name, R.id.contact_image};
             // Create the simple cursor adapter to use for our list
             // specifying the template to inflate (item_contact),
             adapter = new SimpleCursorAdapter(
@@ -329,6 +395,63 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
                     return false;
                 }
             };
+        }
+
+        @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            // Place an action bar item for searching.
+            MenuItem item = menu.add("Search");
+            item.setIcon(R.drawable.searchicon);
+            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+            SearchView sv = new SearchView(getActivity());
+            sv.setOnQueryTextListener(this);
+            item.setActionView(sv);
+        }
+
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            return false;
+        }
+
+        public boolean onQueryTextChange(String newText) {
+            // Called when the action bar search text has changed.  Update
+            // the search filter, and restart the loader to do a new query
+            // with this filter.
+            mCurFilter = !TextUtils.isEmpty(newText) ? newText : null;
+            getLoaderManager().restartLoader(0, null, this);
+            return true;
+        }
+
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            // This is called when a new Loader needs to be created.  This
+            // sample only has one Loader, so we don't care about the ID.
+            // First, pick the base URI to use depending on whether we are
+            // currently filtering.
+            Uri baseUri;
+            if (mCurFilter != null) {
+                baseUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI,
+                        Uri.encode(mCurFilter));
+            } else {
+                baseUri = ContactsContract.Contacts.CONTENT_URI;
+            }
+
+            // Now create and return a CursorLoader that will take care of
+            // creating a Cursor for the data being displayed.
+            String select = "((" + ContactsContract.Contacts.DISPLAY_NAME + " NOTNULL) AND ("
+                    + ContactsContract.Contacts.HAS_PHONE_NUMBER + "=1) AND ("
+                    + ContactsContract.Contacts.DISPLAY_NAME + " != '' ))";
+            return new CursorLoader(getActivity(), baseUri,
+                    CONTACTS_SUMMARY_PROJECTION, select, null,
+                    ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC");
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
         }
     }
 
