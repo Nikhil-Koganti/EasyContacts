@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- default value is a boolean -->
+    <CheckBoxPreference
+        android:id="@+id/dark_theme_preference"
+        android:defaultValue="false"
+        android:key="pref_DarkTheme"
+        android:title="Dark Theme" />
+
+</PreferenceScreen>

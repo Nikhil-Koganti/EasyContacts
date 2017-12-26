@@ -5,11 +5,14 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    public static SharedPreferences sharedPref;
 
     Typeface typeface;
     /*    DatabaseStore database;
@@ -73,6 +77,15 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // read the settings from SharedPreferences
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean Theme = sharedPref.getBoolean(SettingsActivity.KEY_DARK_THEME, false);
+        // set theme according the setting
+        Log.i("Theme changed to ", Theme ? "Dark" : "Light");
+        if(Theme){
+            setTheme(R.style.Theme_Dark);
+        }
+
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -116,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
             return true;
         }else if(id == R.id.action_feedback){
             startActivity(new Intent(getApplicationContext(), FeedbackActivity.class));
@@ -184,6 +198,10 @@ public class MainActivity extends AppCompatActivity implements NewContactFragmen
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            Boolean Theme = sharedPref.getBoolean(SettingsActivity.KEY_DARK_THEME, false);
+            if(Theme){
+                rootView.setBackgroundColor(Color.BLACK);
+            }
             mContext = getContext();
             database = new DatabaseStore(mContext);
             database.openDatabase();

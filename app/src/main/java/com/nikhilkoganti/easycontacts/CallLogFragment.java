@@ -180,6 +180,7 @@ public class CallLogFragment extends ListFragment implements SearchView.OnQueryT
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         // Insert desired behavior here.
+
         Log.i("FragmentComplexList", "Item clicked: " + id);
     }
 
